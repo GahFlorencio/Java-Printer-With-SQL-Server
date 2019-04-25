@@ -1,0 +1,1 @@
+Java application that queries a database, converts the result to ASCII, and prints the results of the names grouped by letter groups into a printed form, loading the informations about sever, database and printer name by a ini config file
