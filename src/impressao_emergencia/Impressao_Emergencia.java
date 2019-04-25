@@ -5,6 +5,11 @@
 
 package impressao_emergencia;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -12,25 +17,62 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Properties;
 import java.util.Vector;
+import javax.swing.JOptionPane;
 
 public class Impressao_Emergencia {
-     
-   
+ 
     
-    public static void main(String[] args)  {
+    public static void main(String[] args) throws FileNotFoundException, IOException  {
+        /***LEITURA DO ARQUIVO DE CONFIGURAÇÃO***/
+        Properties config = new Properties();
+        File file = new File(System.getProperty("user.dir").toString()+"/config.ini");
+        if(!file.exists()){
+            String textoQueSeraEscrito = "****** ARQUIVO DE CONIGURAÇÃO ********\n" +
+                                        "\n" +
+                                        "******SERVIDOR BANCO DE DADOS ******\n" +
+                                        "db_server=SERVIDOR AQUI\n" +
+                                        "db_port=PORTA AQUI\n" +
+                                        "db_name=NOME BANCO AQUI\n" +
+                                        "db_table=TABELA AQUI\n" +
+                                        "db_user=USUARIO AQUI\n" +
+                                        "db_pass=SENHA AQUI\n" +
+                                        "\n" +
+                                        "********IMPRESSORA********\n" +
+                                        "printer_name= NOME IMPRESSORA AQUI\n" +
+                                        "\n" +
+                                        "";
+		FileWriter arq;
+		try {
+			arq = new FileWriter(new File("config.ini"));
+			arq.write(textoQueSeraEscrito);
+			arq.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}         
+        }
+        file = new File(System.getProperty("user.dir").toString()+"/config.ini");      
+       
+        
+         config.load(new FileInputStream(file));
+         String db_server = config.getProperty("db_server").toString(); //SERVIDOR DO BANCO DE DADOS
+         String db_port = config.getProperty("db_port").toString();//PORTA DO BANCO DE DADOS
+         String db_name = config.getProperty("db_name").toString();//NOME BANCO DE DADOS
+         String db_table = config.getProperty("db_table").toString();//TABELA OU VIEW DO BANCO DE DADOS
+         String db_user = config.getProperty("db_user").toString();//USUARIO BANCO DE DADOS
+         String db_pass = config.getProperty("db_pass").toString();//SENHA BANCO DE DADOS
+         String printer_name = config.getProperty("printer_name").toString();//NOME DA IMPRESSORA BANCO DE DADOS
+        
+      
+      
     ///DEFINIÇÕES PRÉ CONSULTA NO BANCO DE DADOS    
     
     String newline = System.getProperty("line.separator");///VARIAVEL PARA PULAR LINHA
-    int pessoas = 0; //SETA A QUANTIDADE DE PESSOAAS
-    int l1 = 0;
-    int l2 = 0;
-    int l3 = 0;
-    int l5 = 0;
-    int l6 = 0;
-    int l7 = 0;
-    
-    /**DATA ATUAL DO SYSTEMA**/
+     
+    /**DATA ATUAL DO SISTEMA**/
     java.util.Date NDATA = new Date();
     String DATASYS = java.text.DateFormat.getDateInstance(DateFormat.MEDIUM).format(NDATA);
 
@@ -60,14 +102,18 @@ public class Impressao_Emergencia {
     String CMP = "";
     String CQT = "";
     String CUZ = ""; 
-
+    
+    /**resultado da impressão**/
+    Integer resultado = 0;
+   
     //CRIA VARIAVEL DE CONEXÃO SQL
-    String connectionUrl = "jdbc:sqlserver://SERVIDORAQUI:1433;databaseName=BANCODEDADOSAQUI;user=USUARIOAQUI;password=SENHAQUI";
+    String connectionUrl = "jdbc:sqlserver://"+db_server+":"+db_port+";databaseName="+db_name+";user="+db_user+";password="+db_pass+"";
 
+        
         
     ///POPOULA ARRAY DE OBJETOS COM RESULTADO DA CONSULTA
     try (Connection con = DriverManager.getConnection(connectionUrl); Statement stmt = con.createStatement();) {
-       String SQL = "SELECT * NO BANCO DE DADOS";
+       String SQL = "SELECT * FROM "+db_table;
        ResultSet rs = stmt.executeQuery(SQL);
 
 
@@ -156,12 +202,15 @@ public class Impressao_Emergencia {
 
 
 
-    Impressora printer = new Impressora();
+    Impressora printer = new Impressora(printer_name);
 
     Integer cont = 0;
     Integer contl= 0;
     Integer pg = 1;
     
+     
+    
+        
     
     
     
@@ -196,6 +245,8 @@ public class Impressao_Emergencia {
              cont++;
                                      
          }
+         resultado++;
+         
      }
      
      
@@ -233,7 +284,9 @@ public class Impressao_Emergencia {
              cont++;
                                      
          }
+         resultado++;
      }
+     
      
      ///IMPRESSAO DO GRUPO DE I ATÉ  L
       cont = 0;
@@ -269,6 +322,7 @@ public class Impressao_Emergencia {
              cont++;
                                      
          }
+         resultado++;
      }
      
      ///IMPRESSAO DO GRUPO DE M ATÉ  P
@@ -305,6 +359,7 @@ public class Impressao_Emergencia {
              cont++;
                                      
          }
+     resultado++;
      }
      
      ///IMPRESSAO DO GRUPO DE Q ATÉ  T
@@ -341,6 +396,7 @@ public class Impressao_Emergencia {
              cont++;
                                      
          }
+         resultado++;
      }
      ///IMPRESSAO DO GRUPO DE U ATÉ  Z
       cont = 0;
@@ -376,9 +432,10 @@ public class Impressao_Emergencia {
              cont++;
                                      
          }
+         resultado++;
      }
-         
-
+     /******VERIFICA SE IMPRIMIU CON ******/
+    JOptionPane.showMessageDialog(null, "LISTA ENVIADA PARA IMPRESSÃO.");
     
 
     }

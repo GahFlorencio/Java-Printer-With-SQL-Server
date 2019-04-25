@@ -16,18 +16,18 @@ public final class Impressora {
 
 private static PrintService impressora;
 
-public Impressora() {
-    detectaImpressoras();
+public Impressora(String NomeImpressora) {
+    detectaImpressoras(NomeImpressora);
 }
 // O metodo verifica se existe impressora conectada e a
 // define como padrao.
 
-public void detectaImpressoras() {
+public void detectaImpressoras(String NomeImpressora) {
     try {
         DocFlavor df = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
         PrintService[] ps = PrintServiceLookup.lookupPrintServices(df, null);
         for (PrintService p : ps) {
-            if (p.getName() != null && p.getName().contains("Itv_Recursos_Humanos")) {
+            if (p.getName() != null && p.getName().contains(NomeImpressora)) {
                 System.out.println("Impressora Selecionada: " + p.getName());
                 System.out.println("Impressora encontrada: " + p.getName());
                 impressora = p;
@@ -52,7 +52,6 @@ public synchronized boolean imprime(String texto) {
             DocFlavor flavor = DocFlavor.INPUT_STREAM.AUTOSENSE;
             Doc doc = new SimpleDoc(stream, flavor, null);
             dpj.print(doc, null);
-            
             return true;
         } catch (PrintException e) {
             e.printStackTrace();
